@@ -1,0 +1,48 @@
+browser->server: HTTP GET https://.../exampleapp/notes
+server-->browser: HTML-code
+browser->server: HTTP GET https://.../exampleapp/main.css
+server-->browser: main.css
+browser->server: HTTP GET https://.../exampleapp/main.js
+server-->browser: main.js
+
+note over browser:
+browser starts executing js-code
+that requests JSON data from server 
+end note 
+
+browser->server: HTTP GET https://.../exampleapp/data.json
+server-->browser: [{ content: "HTML is easy", date: "2019-05-23" }, ...]
+
+note over browser:
+browser executes the event handler
+that renders notes to display
+end note
+
+note over browser:
+User write a new note using the form field
+and click on submit button
+end note 
+
+browser->server: HTTP POST https://.../exampleapp/new_note
+
+note over server:
+Server receive the form data with
+the typed value in the input field and response
+with a 302 HTTP status code to redirect to an url
+end note
+
+server-->browser: Redirect to /exampleapp/notes
+
+browser->server: HTTP GET https://.../exampleapp/notes
+server-->browser: HTML-code
+
+browser->server: HTTP GET https://.../exampleapp/main.css
+server-->browser: main.css
+
+browser->server: HTTP GET https://.../exampleapp/main.js
+server-->browser: main.js
+
+browser->server: HTTP GET https://.../exampleapp/data.json
+server-->browser: [{ content: "This a new note", date: "2023-05-23" }, ...]
+
+
