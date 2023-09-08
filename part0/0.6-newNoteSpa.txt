@@ -13,4 +13,19 @@ end note
 browser->server: HTTP GET https://.../exampleapp/data.json
 server-->browser: [{ content: "HTML is easy", date: "2019-05-23" }, ...]
 
+note over browser:
+User write a new note using the form field
+and click on submit button
+end note 
+
+note over browser:
+browser executes the event handler
+that add the new note to the note list,
+then renders notes to display
+and finally, send a post request to 
+send the new note to the server
+end note
+
+browser->server: HTTP POST https://.../exampleapp/new_note_spa
+
 
