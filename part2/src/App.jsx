@@ -11,14 +11,16 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    personsService
-      .getAll()
-      .then(initialPersons => {
+    const fetchPersons = async () => {
+      try {
+        const initialPersons = await personsService.getAll();
         setPersons(initialPersons);
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Error fetching data:', error);
-      });
+      }
+    };
+
+    fetchPersons();
   }, []);
 
   const handleNameChange = (event) => {
@@ -33,11 +35,27 @@ const App = () => {
     setSearchTerm(event.target.value);
   };
 
-  const addPerson = (event) => {
+  const addPerson = async (event) => {
     event.preventDefault();
+    const personExists = persons.find(person => person.name === newName);
 
-    if (persons.some(person => person.name === newName)) {
-      alert(`${newName} is already added to phonebook`);
+    if (personExists) {
+      const confirmUpdate = window.confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`
+      );
+
+      if (confirmUpdate) {
+        const updatedPerson = { ...personExists, number: newNumber };
+
+        try {
+          const returnedPerson = await personsService.update(personExists.id, updatedPerson);
+          setPersons(persons.map(person => person.id !== personExists.id ? person : returnedPerson));
+          setNewName('');
+          setNewNumber('');
+        } catch (error) {
+          console.error('Error updating person:', error);
+        }
+      }
       return;
     }
 
@@ -46,16 +64,25 @@ const App = () => {
       number: newNumber,
     };
 
-    personsService
-      .create(personObject)
-      .then(returnedPerson => {
-        setPersons(persons.concat(returnedPerson));
-        setNewName('');
-        setNewNumber('');
-      })
-      .catch(error => {
-        console.error('Error adding person:', error);
-      });
+    try {
+      const returnedPerson = await personsService.create(personObject);
+      setPersons(persons.concat(returnedPerson));
+      setNewName('');
+      setNewNumber('');
+    } catch (error) {
+      console.error('Error adding person:', error);
+    }
+  };
+
+  const deletePerson = async (id, name) => {
+    if (window.confirm(`Delete ${name}?`)) {
+      try {
+        await personsService.remove(id);
+        setPersons(persons.filter(person => person.id !== id));
+      } catch (error) {
+        console.error('Error deleting person:', error);
+      }
+    }
   };
 
   const personsToShow = persons.filter(person =>
@@ -75,7 +102,7 @@ const App = () => {
         addPerson={addPerson}
       />
       <h3>Numbers</h3>
-      <Persons persons={personsToShow} />
+      <Persons persons={personsToShow} deletePerson={deletePerson} />
     </div>
   );
 };
